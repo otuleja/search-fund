@@ -1,6 +1,6 @@
 import React from "react";
 import { Chart } from "react-charts";
-import { calcSharpeRatio } from "./Rates";
+// import { calcSharpeRatio } from "./Rates";
 
 const createData = (results) => {
   let a = [];
