@@ -1,17 +1,31 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import React from "react";
+import {
+  ApolloClient,
+  InMemoryCache,
+  gql,
+  ApolloProvider,
+} from "@apollo/client";
+import { ExchangeRates } from "./Rates";
+import ReactDOM from "react-dom";
+import "./index.css";
+// import App from "./App";
 
-ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root')
-);
+import reportWebVitals from "./reportWebVitals";
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+const client = new ApolloClient({
+  uri: "https://2k3ng5u364.execute-api.us-east-1.amazonaws.com/dev/graphql",
+  // uri: "http://localhost:4000/",
+  cache: new InMemoryCache(),
+});
+
+function App() {
+  return (
+    <ApolloProvider client={client}>
+      <div>
+        <ExchangeRates />
+      </div>
+    </ApolloProvider>
+  );
+}
+
+ReactDOM.render(<App />, document.getElementById("root"));
