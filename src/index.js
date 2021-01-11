@@ -2,7 +2,7 @@ import React from "react";
 import {
   ApolloClient,
   InMemoryCache,
-  gql,
+  // gql,
   ApolloProvider,
 } from "@apollo/client";
 import { ExchangeRates } from "./Rates";
@@ -10,7 +10,7 @@ import ReactDOM from "react-dom";
 import "./index.css";
 // import App from "./App";
 
-import reportWebVitals from "./reportWebVitals";
+// import reportWebVitals from "./reportWebVitals";
 
 const client = new ApolloClient({
   uri: "https://2k3ng5u364.execute-api.us-east-1.amazonaws.com/dev/graphql",

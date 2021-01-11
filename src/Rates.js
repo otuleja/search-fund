@@ -3,14 +3,14 @@ import TextField from "@material-ui/core/TextField";
 import Grid from "@material-ui/core/Grid";
 import React, { useState, useEffect } from "react";
 import Graph from "./Graph.js";
-const EXCHANGE_RATES = gql`
-  query GetExchangeRates {
-    books {
-      title
-      author
-    }
-  }
-`;
+// const EXCHANGE_RATES = gql`
+//   query GetExchangeRates {
+//     books {
+//       title
+//       author
+//     }
+//   }
+// `;
 
 const GET = gql`
   query get(
@@ -45,7 +45,9 @@ export function ExchangeRates() {
     fetchPolicy: "network-only",
     onCompleted: (data) => {
       const { mean, stdDev } = data.gett;
-      results.push({ mean, stdDev, investments });
+      let a = [...results];
+      a.push({ mean, stdDev, investments });
+      setResults(a);
       if (investments <= vars.maxInvestments) {
         setInvestments(investments + 1);
         setShouldFetch(true);
@@ -68,6 +70,7 @@ export function ExchangeRates() {
       ex({ variables: { investments, ...copyOfVars } });
       setShouldFetch(false);
     }
+    // eslint-disable-next-line
   }, [shouldFetch]);
   const handleChange = (e) => {
     setVars({ ...vars, [e.target.name]: e.target.value });
