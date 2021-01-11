@@ -135,7 +135,7 @@ export function ExchangeRates() {
               <tr>
                 <th>Investments</th>
                 <th>Return</th>
-                <th>StdDev</th>
+                <th>Std Dev</th>
                 <th>Sharpe Ratio</th>
               </tr>
               {results.map((result) => {
