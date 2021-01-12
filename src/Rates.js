@@ -224,7 +224,7 @@ const bigCalc = ({ investments, irr }) => {
   //   const a = randn_bm();
   //   return a * std_dev + mean;
   // };
-  const numTrials = 1000;
+  const numTrials = 5000;
   let a = [];
   for (let i = 0; i < numTrials; i++) {
     let b = [];
