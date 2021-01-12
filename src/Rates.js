@@ -1,4 +1,4 @@
-import { useLazyQuery, gql } from "@apollo/client";
+import { gql } from "@apollo/client";
 import TextField from "@material-ui/core/TextField";
 import Grid from "@material-ui/core/Grid";
 import React, { useState, useEffect } from "react";
@@ -12,26 +12,26 @@ import Graph from "./Graph.js";
 //   }
 // `;
 
-const GET = gql`
-  query get(
-    $investments: Int
-    $rfr: Float
-    $irr: Float
-    $minInvestments: Float
-    $maxInvestments: Float
-  ) {
-    gett(
-      investments: $investments
-      rfr: $rfr
-      irr: $irr
-      minInvestments: $minInvestments
-      maxInvestments: $maxInvestments
-    ) {
-      mean
-      stdDev
-    }
-  }
-`;
+// const GET = gql`
+//   query get(
+//     $investments: Int
+//     $rfr: Float
+//     $irr: Float
+//     $minInvestments: Float
+//     $maxInvestments: Float
+//   ) {
+//     gett(
+//       investments: $investments
+//       rfr: $rfr
+//       irr: $irr
+//       minInvestments: $minInvestments
+//       maxInvestments: $maxInvestments
+//     ) {
+//       mean
+//       stdDev
+//     }
+//   }
+// `;
 export function ExchangeRates() {
   const [vars, setVars] = useState({
     rfr: "2.0",
