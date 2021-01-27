@@ -14,6 +14,7 @@ import "./index.css";
 
 const client = new ApolloClient({
   uri: "https://2k3ng5u364.execute-api.us-east-1.amazonaws.com/dev/graphql",
+  //comment
   // uri: "http://localhost:4000/",
   cache: new InMemoryCache(),
 });
