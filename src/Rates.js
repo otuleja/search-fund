@@ -1,79 +1,42 @@
-// import { gql } from "@apollo/client";
 import TextField from "@material-ui/core/TextField";
 import Grid from "@material-ui/core/Grid";
 import React, { useState, useEffect } from "react";
 import Graph from "./Graph.js";
-// const EXCHANGE_RATES = gql`
-//   query GetExchangeRates {
-//     books {
-//       title
-//       author
-//     }
-//   }
-// `;
 
-// const GET = gql`
-//   query get(
-//     $investments: Int
-//     $rfr: Float
-//     $irr: Float
-//     $minInvestments: Float
-//     $maxInvestments: Float
-//   ) {
-//     gett(
-//       investments: $investments
-//       rfr: $rfr
-//       irr: $irr
-//       minInvestments: $minInvestments
-//       maxInvestments: $maxInvestments
-//     ) {
-//       mean
-//       stdDev
-//     }
-//   }
-// `;
+const returnsArray = [
+  { roi: 0, num: 47 },
+  { roi: 1.5, num: 44 },
+  { roi: 3.75, num: 50 },
+  { roi: 7.5, num: 32 },
+  { roi: 15, num: 13 },
+];
+
 export function ExchangeRates() {
   const [vars, setVars] = useState({
     rfr: "2.0",
     irr: 30,
     minInvestments: 5,
-    maxInvestments: 30,
+    maxInvestments: 35,
   });
   const [investments, setInvestments] = useState(null);
   const [results, setResults] = useState([]);
-  // const [ex, getStatus] = useLazyQuery(GET, {
-  //   fetchPolicy: "network-only",
-  //   onCompleted: (data) => {
-  //     const { mean, stdDev } = data.gett;
-  //     let a = [...results];
-  //     a.push({ mean, stdDev, investments });
-  //     setResults(a);
-  //     if (investments <= vars.maxInvestments) {
-  //       setInvestments(investments + 1);
-  //       setShouldFetch(true);
-  //     }
-  //   },
-  //   onError: (e) => {
-  //     console.log("error", e);
-  //   },
-  // });
   const [shouldFetch, setShouldFetch] = useState(false);
   const setTrue = () => {
-    console.log("setting true");
+    // console.log("setting true");
     setTimeout(() => {
       setShouldFetch(true);
     }, 100);
   };
   useEffect(() => {
     if (shouldFetch) {
-      console.log("in here");
+      // console.log("in here");
       let copyOfVars = { ...vars };
       copyOfVars.rfr = parseFloat(copyOfVars.rfr);
       copyOfVars.irr = parseInt(copyOfVars.irr);
       copyOfVars.minInvestments = parseInt(copyOfVars.minInvestments);
       copyOfVars.maxInvestments = parseInt(copyOfVars.maxInvestments);
       const data = bigCalc({ investments, ...copyOfVars });
-
+      // console.log("data", data);
       const { mean, stdDev } = data;
       let a = [...results];
       a.push({ mean, stdDev, investments });
@@ -104,17 +67,35 @@ export function ExchangeRates() {
     <div>
       <Grid container>
         <Grid item xs={4} container>
-          <div style={{ marginTop: 15 }}>
-            <TextField
-              name="rfr"
-              id="outlined-basic"
-              label="Risk-free rate"
-              variant="outlined"
-              value={vars.rfr}
-              onChange={handleChange}
-            />
-          </div>
-          <div style={{ marginTop: 10 }}>
+          <Grid item xs={12} container>
+            <Grid item xs={12}>
+              Distribution of ROIs (from Stanford study)
+            </Grid>
+            {returnsArray.map((returnObj) => {
+              return (
+                <>
+                  <Grid item xs={6}>
+                    Roi: {returnObj.roi}
+                  </Grid>
+                  <Grid item xs={6}>
+                    Number: {returnObj.num}
+                  </Grid>
+                </>
+              );
+            })}
+          </Grid>
+          <Grid item xs={12} container>
+            <div style={{ marginTop: 15 }}>
+              <TextField
+                name="rfr"
+                id="outlined-basic"
+                label="Risk-free rate"
+                variant="outlined"
+                value={vars.rfr}
+                onChange={handleChange}
+              />
+            </div>
+            {/* <div style={{ marginTop: 10 }}>
             <TextField
               name="irr"
               id="outlined-basic"
@@ -123,31 +104,33 @@ export function ExchangeRates() {
               value={vars.irr}
               onChange={handleChange}
             />
-          </div>
-          <div style={{ marginTop: 15 }}>Range of investments per fund</div>
-          <div style={{ marginTop: 10 }}>
-            <TextField
-              name="minInvestments"
-              id="outlined-basic"
-              label="Min"
-              variant="outlined"
-              value={vars.minInvestments}
-              onChange={handleChange}
-            />
-          </div>
-          <div style={{ marginTop: 10 }}>
-            <TextField
-              name="maxInvestments"
-              id="outlined-basic"
-              label="Max"
-              variant="outlined"
-              value={vars.maxInvestments}
-              onChange={handleChange}
-            />
-          </div>
-          <div>
-            <button onClick={() => handleSubmit()}>Submit</button>
-          </div>
+          </div> */}
+            <div style={{ marginTop: 15 }}>Range of investments per fund</div>
+            <div style={{ marginTop: 10 }}>
+              <TextField
+                name="minInvestments"
+                id="outlined-basic"
+                label="Min"
+                variant="outlined"
+                value={vars.minInvestments}
+                onChange={handleChange}
+              />
+            </div>
+            <div style={{ marginTop: 10 }}>
+              <TextField
+                name="maxInvestments"
+                id="outlined-basic"
+                label="Max"
+                variant="outlined"
+                value={vars.maxInvestments}
+                onChange={handleChange}
+              />
+            </div>
+            <div>
+              <button onClick={() => handleSubmit()}>Submit</button>
+            </div>
+          </Grid>
+
           <div>
             <table>
               <tr>
@@ -156,18 +139,24 @@ export function ExchangeRates() {
                 <th>Std Dev</th>
                 <th>Sharpe Ratio</th>
               </tr>
-              {results.map((result) => {
+              {results.map((result, index) => {
                 return (
-                  <tr>
+                  <tr key={index}>
                     <td>{result.investments}</td>
-                    <td>{result.mean.toFixed(3)}</td>
-                    <td>{result.stdDev.toFixed(3)}</td>
-                    <td>
+                    <td style={{ paddingLeft: `5px`, paddingRight: `5px` }}>
+                      {(result.mean * 100).toFixed(2)}
+                      {`%`}
+                    </td>
+                    <td style={{ paddingLeft: `5px`, paddingRight: `5px` }}>
+                      {(result.stdDev * 100).toFixed(2)}
+                      {`%`}
+                    </td>
+                    <td style={{ textAlign: "center" }}>
                       {calcSharpeRatio(
                         result.mean,
                         parseFloat(vars.rfr) / 100,
                         result.stdDev
-                      ).toFixed(3)}
+                      ).toFixed(2)}
                     </td>
                   </tr>
                 );
@@ -183,64 +172,51 @@ export function ExchangeRates() {
   );
 }
 export const calcSharpeRatio = (mean, rfr, stdDev) => {
+  console.log(mean, rfr, stdDev);
   const sharpe = (mean - rfr) / stdDev;
   return sharpe;
 };
 
 const bigCalc = ({ investments, irr }) => {
-  console.log(investments);
+  let returnsObj = [...returnsArray];
+  const sum = returnsObj.reduce((acc, current) => {
+    acc = acc + current.num;
+    return acc;
+  }, 0);
+  let cumulative = 0;
+  returnsObj = returnsObj.map((a) => {
+    cumulative = cumulative + a.num;
+    let percentage = cumulative / sum;
+    return { ...a, cumulative, percentage };
+  });
   const numInvestmentsPerFund = investments;
 
-  // const randn_bm = () => {
-  //   var u = 0,
-  //     v = 0;
-  //   while (u === 0) u = Math.random(); //Converting [0,1) to (0,1)
-  //   while (v === 0) v = Math.random();
-  //   return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
-  // };
-  const determineResultOfOneTrial = (bustPercentage, median, range) => {
-    const takeSample = (m, r) => {
-      const rand = Math.random();
-      return rand * (2 * r) + (m - r);
-    };
+  const determineResultOfOneTrial = () => {
     const rand = Math.random();
     let result = 0;
-    if (rand > bustPercentage) {
-      result = takeSample(median, range);
+    for (let i = 0; i < returnsObj.length; i++) {
+      if (rand < returnsObj[i].percentage) {
+        result = returnsObj[i].roi;
+        break;
+      }
     }
     return result;
   };
-  const calculateNeededMedian = (bustPercentage, finalTarget) => {
-    return finalTarget / (1 - bustPercentage);
-  };
   const years = 5;
   const investment = 150;
-  const target_irr = irr;
-  const finalTarget = investment * Math.pow(1 + target_irr / 100, years);
-  const std_deviation = finalTarget / 2;
-  const bustPercentage = 0.2;
-  const neededMedian = calculateNeededMedian(bustPercentage, finalTarget);
-  // const run_trial = (std_dev, mean) => {
-  //   const a = randn_bm();
-  //   return a * std_dev + mean;
-  // };
-  const numTrials = 5000;
+  const numTrials = 100000;
   let a = [];
   for (let i = 0; i < numTrials; i++) {
     let b = [];
     for (let n = 0; n < numInvestmentsPerFund; n++) {
-      const result = determineResultOfOneTrial(
-        bustPercentage,
-        neededMedian,
-        std_deviation
-      );
+      let result = determineResultOfOneTrial();
+      result = result * investment;
 
       b.push(result);
     }
     a.push(b);
   }
   let arrayOfMeans = [];
-
   const calcMean = (array) => {
     let sum = 0;
     for (let n = 0; n < array.length; n++) {
@@ -253,7 +229,7 @@ const bigCalc = ({ investments, irr }) => {
     const mean = calcMean(a[i]);
     arrayOfMeans.push(mean);
   }
-
+  // console.log(arrayOfMeans);
   const calculateAnnualReturn = (startingInvestment, endValue, years) => {
     const annualReturn = Math.pow(endValue / startingInvestment, 1 / years) - 1;
     return annualReturn;
@@ -267,6 +243,25 @@ const bigCalc = ({ investments, irr }) => {
     );
     returns.push(annualReturn);
   }
+  // console.log(returns);
+  let grossPayoffs = a.reduce((acc, curr) => {
+    let sum = curr.reduce((a, c) => {
+      a = a + c;
+      return a;
+    }, 0);
+    acc.push(sum);
+    return acc;
+  }, []);
+  // console.log("gross", grossPayoffs);
+  let adjustedReturns = grossPayoffs.map((payoff) => {
+    let a = calculateAnnualReturn(
+      investment * numInvestmentsPerFund,
+      payoff,
+      5
+    );
+    return a;
+  });
+  // console.log("adjusted returns", adjustedReturns);
   const getStandardDeviation = (array) => {
     const n = array.length;
     const mean = array.reduce((a, b) => a + b) / n;
@@ -274,7 +269,6 @@ const bigCalc = ({ investments, irr }) => {
       array.map((x) => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n
     );
   };
-  console.log(returns.length);
   const abc = calcMean(returns);
   const def = getStandardDeviation(returns);
   return { mean: abc, stdDev: def };
