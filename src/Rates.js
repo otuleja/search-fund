@@ -54,6 +54,13 @@ export function ExchangeRates() {
     // eslint-disable-next-line
   }, [shouldFetch]);
   const handleChange = (e) => {
+    if (
+      e.target.name === "minInvestments" ||
+      e.target.name === "maxInvestments"
+    ) {
+      setVars({ ...vars, [e.target.name]: parseInt(e.target.value) });
+      return;
+    }
     setVars({ ...vars, [e.target.name]: e.target.value });
   };
   // console.log(getStatus);
@@ -114,6 +121,7 @@ export function ExchangeRates() {
                 variant="outlined"
                 value={vars.minInvestments}
                 onChange={handleChange}
+                type="number"
               />
             </div>
             <div style={{ marginTop: 10 }}>
@@ -124,6 +132,7 @@ export function ExchangeRates() {
                 variant="outlined"
                 value={vars.maxInvestments}
                 onChange={handleChange}
+                type="number"
               />
             </div>
             <div>
