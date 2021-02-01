@@ -93,6 +93,7 @@ function CustomTooltip({ getStyle, primaryAxis, datum, vars, results }) {
         sharpeRatio: sd,
       });
     }
+    // eslint-disable-next-line
   }, [datum]);
   return datum ? (
     <div

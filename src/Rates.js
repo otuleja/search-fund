@@ -244,23 +244,23 @@ const bigCalc = ({ investments, irr }) => {
     returns.push(annualReturn);
   }
   // console.log(returns);
-  let grossPayoffs = a.reduce((acc, curr) => {
-    let sum = curr.reduce((a, c) => {
-      a = a + c;
-      return a;
-    }, 0);
-    acc.push(sum);
-    return acc;
-  }, []);
+  // let grossPayoffs = a.reduce((acc, curr) => {
+  //   let sum = curr.reduce((a, c) => {
+  //     a = a + c;
+  //     return a;
+  //   }, 0);
+  //   acc.push(sum);
+  //   return acc;
+  // }, []);
   // console.log("gross", grossPayoffs);
-  let adjustedReturns = grossPayoffs.map((payoff) => {
-    let a = calculateAnnualReturn(
-      investment * numInvestmentsPerFund,
-      payoff,
-      5
-    );
-    return a;
-  });
+  // let adjustedReturns = grossPayoffs.map((payoff) => {
+  //   let a = calculateAnnualReturn(
+  //     investment * numInvestmentsPerFund,
+  //     payoff,
+  //     5
+  //   );
+  //   return a;
+  // });
   // console.log("adjusted returns", adjustedReturns);
   const getStandardDeviation = (array) => {
     const n = array.length;
