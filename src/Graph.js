@@ -12,8 +12,8 @@ const createData = (results) => {
   return a;
 };
 function MyChart({ results, vars }) {
-  console.log(vars);
-  console.log(results);
+  // console.log(vars);
+  // console.log(results);
   // console.log(createData(results));
   const data = [
     {
@@ -77,7 +77,7 @@ function CustomTooltip({ getStyle, primaryAxis, datum, vars, results }) {
   });
   useEffect(() => {
     if (datum) {
-      console.log("yes!");
+      // console.log("yes!");
       let { originalDatum } = datum;
       let investmentsPerFund = originalDatum[0];
       let index = investmentsPerFund - vars.minInvestments;

@@ -15,8 +15,9 @@ export function ExchangeRates() {
   const [vars, setVars] = useState({
     rfr: "2.0",
     irr: 30,
-    minInvestments: 5,
-    maxInvestments: 35,
+    minInvestments: 2,
+    maxInvestments: 2,
+    deteriorates: 0.93,
   });
   const [investments, setInvestments] = useState(null);
   const [results, setResults] = useState([]);
@@ -29,26 +30,50 @@ export function ExchangeRates() {
   };
   useEffect(() => {
     if (shouldFetch) {
-      // console.log("in here");
       let copyOfVars = { ...vars };
       copyOfVars.rfr = parseFloat(copyOfVars.rfr);
       copyOfVars.irr = parseInt(copyOfVars.irr);
       copyOfVars.minInvestments = parseInt(copyOfVars.minInvestments);
       copyOfVars.maxInvestments = parseInt(copyOfVars.maxInvestments);
       const data = bigCalc({ investments, ...copyOfVars });
-      // console.log("data", data);
-      const { mean, stdDev } = data;
+      const { mean, stdDev, actualReturn, modifiedStdDev } = data;
+      const sharpeRatio = calcSharpeRatio(
+        // result.mean,
+        actualReturn,
+        parseFloat(vars.rfr) / 100,
+        stdDev
+      ).toFixed(2);
+
       let a = [...results];
-      a.push({ mean, stdDev, investments });
+      a.push({
+        mean,
+        stdDev,
+        investments,
+        actualReturn,
+        modifiedStdDev,
+        sharpeRatio,
+      });
+      let maxSharpe = 0;
+      a.forEach((obj) => {
+        if (obj.sharpeRatio > maxSharpe) {
+          maxSharpe = obj.sharpeRatio;
+        }
+      });
+      a = a.map((obj) => {
+        if (obj.sharpeRatio === maxSharpe) {
+          obj.isBest = true;
+        } else {
+          obj.isBest = false;
+        }
+        return obj;
+      });
       setResults(a);
 
-      // ex({ variables: { investments, ...copyOfVars } });
       setShouldFetch(false);
 
-      if (investments <= vars.maxInvestments) {
+      if (investments < vars.maxInvestments) {
         setInvestments(investments + 1);
         setTrue();
-        // setShouldFetch(true);
       }
     }
     // eslint-disable-next-line
@@ -56,7 +81,8 @@ export function ExchangeRates() {
   const handleChange = (e) => {
     if (
       e.target.name === "minInvestments" ||
-      e.target.name === "maxInvestments"
+      e.target.name === "maxInvestments" ||
+      e.target.name === "deteriorates"
     ) {
       setVars({ ...vars, [e.target.name]: parseInt(e.target.value) });
       return;
@@ -70,10 +96,14 @@ export function ExchangeRates() {
     }
     setShouldFetch(true);
   };
+
+  const handleReset = () => {
+    setResults([]);
+  };
   return (
     <div>
       <Grid container>
-        <Grid item xs={4} container>
+        <Grid item xs={12} container>
           <Grid item xs={12} container>
             <Grid item xs={12}>
               Distribution of ROIs (from Stanford study)
@@ -135,8 +165,23 @@ export function ExchangeRates() {
                 type="number"
               />
             </div>
+            <div style={{ marginTop: 10 }}>
+              <TextField
+                name="deteriorates"
+                id="outlined-basic"
+                label="Deteriorates"
+                variant="outlined"
+                value={vars.deteriorates}
+                onChange={handleChange}
+                type="number"
+              />
+            </div>
+
             <div>
               <button onClick={() => handleSubmit()}>Submit</button>
+            </div>
+            <div>
+              <button onClick={() => handleReset()}>Reset</button>
             </div>
           </Grid>
 
@@ -145,10 +190,14 @@ export function ExchangeRates() {
               <tr>
                 <th>Investments</th>
                 <th>Return</th>
+                <th>Modified Return</th>
                 <th>Std Dev</th>
+                {/* <th>Modified Std Dev</th> */}
                 <th>Sharpe Ratio</th>
               </tr>
               {results.map((result, index) => {
+                const { isBest } = result;
+                // console.log(isBest);
                 return (
                   <tr key={index}>
                     <td>{result.investments}</td>
@@ -156,16 +205,30 @@ export function ExchangeRates() {
                       {(result.mean * 100).toFixed(2)}
                       {`%`}
                     </td>
+                    <td>
+                      {(result.actualReturn * 100).toFixed(2)}
+                      {`%`}
+                    </td>
                     <td style={{ paddingLeft: `5px`, paddingRight: `5px` }}>
                       {(result.stdDev * 100).toFixed(2)}
                       {`%`}
                     </td>
-                    <td style={{ textAlign: "center" }}>
-                      {calcSharpeRatio(
-                        result.mean,
+                    {/* <td style={{ textAlign: "center" }}>
+                      {result.modifiedStdDev}
+                    </td> */}
+                    <td
+                      style={{
+                        textAlign: "center",
+                        border: isBest ? `2px solid blue` : `none`,
+                      }}
+                    >
+                      {result.sharpeRatio}
+                      {/* {calcSharpeRatio(
+                        // result.mean,
+                        result.actualReturn,
                         parseFloat(vars.rfr) / 100,
                         result.stdDev
-                      ).toFixed(2)}
+                      ).toFixed(2)} */}
                     </td>
                   </tr>
                 );
@@ -186,7 +249,7 @@ export const calcSharpeRatio = (mean, rfr, stdDev) => {
   return sharpe;
 };
 
-const bigCalc = ({ investments, irr }) => {
+const bigCalc = ({ investments, irr, deteriorates }) => {
   let returnsObj = [...returnsArray];
   const sum = returnsObj.reduce((acc, current) => {
     acc = acc + current.num;
@@ -200,7 +263,7 @@ const bigCalc = ({ investments, irr }) => {
   });
   const numInvestmentsPerFund = investments;
 
-  const determineResultOfOneTrial = () => {
+  const determineResultOfOneTrial = (n) => {
     const rand = Math.random();
     let result = 0;
     for (let i = 0; i < returnsObj.length; i++) {
@@ -209,23 +272,35 @@ const bigCalc = ({ investments, irr }) => {
         break;
       }
     }
+    result = result * Math.pow(deteriorates, n) * 1.1;
     return result;
   };
   const years = 5;
   const investment = 150;
   const numTrials = 100000;
+  // const numTrials = 3;
+
   let a = [];
   for (let i = 0; i < numTrials; i++) {
     let b = [];
     for (let n = 0; n < numInvestmentsPerFund; n++) {
-      let result = determineResultOfOneTrial();
+      let result = determineResultOfOneTrial(n);
       result = result * investment;
 
       b.push(result);
     }
     a.push(b);
   }
+  // console.log(a);
   let arrayOfMeans = [];
+  const calcSum = (array) => {
+    let sum = 0;
+    for (let n = 0; n < array.length; n++) {
+      sum = sum + array[n];
+    }
+    return sum;
+  };
+
   const calcMean = (array) => {
     let sum = 0;
     for (let n = 0; n < array.length; n++) {
@@ -239,10 +314,23 @@ const bigCalc = ({ investments, irr }) => {
     arrayOfMeans.push(mean);
   }
   // console.log(arrayOfMeans);
-  const calculateAnnualReturn = (startingInvestment, endValue, years) => {
-    const annualReturn = Math.pow(endValue / startingInvestment, 1 / years) - 1;
+  const calculateAnnualReturn = (
+    startingInvestment,
+    endValue,
+    years,
+    addBack
+  ) => {
+    // console.log(startingInvestment, endValue);
+    let annualReturn = Math.pow(endValue / startingInvestment, 1 / years) - 1;
+    if (addBack) {
+      annualReturn = annualReturn + 1;
+    }
     return annualReturn;
   };
+
+  // const calculateROI = (startingInvestment, endValue, years) => {
+
+  // }
   let returns = [];
   for (let i = 0; i < arrayOfMeans.length; i++) {
     const annualReturn = calculateAnnualReturn(
@@ -253,15 +341,34 @@ const bigCalc = ({ investments, irr }) => {
     returns.push(annualReturn);
   }
   // console.log(returns);
-  // let grossPayoffs = a.reduce((acc, curr) => {
-  //   let sum = curr.reduce((a, c) => {
-  //     a = a + c;
-  //     return a;
-  //   }, 0);
-  //   acc.push(sum);
-  //   return acc;
-  // }, []);
+  let grossPayoffs = a.reduce((acc, curr) => {
+    let sum = curr.reduce((a, c) => {
+      a = a + c;
+      return a;
+    }, 0);
+    acc.push(sum);
+    return acc;
+  }, []);
   // console.log("gross", grossPayoffs);
+  let r = [];
+  grossPayoffs.forEach((payoff) => {
+    let actualReturn = calculateAnnualReturn(
+      investment * numInvestmentsPerFund,
+      payoff,
+      5,
+      true
+    );
+    r.push(actualReturn);
+  });
+  // console.log("r", r);
+  let s = calcSum(grossPayoffs);
+  // console.log("sum", s);
+  let actualReturn = calculateAnnualReturn(
+    investment * numInvestmentsPerFund * numTrials,
+    s,
+    5
+  );
+  // console.log(b);
   // let adjustedReturns = grossPayoffs.map((payoff) => {
   //   let a = calculateAnnualReturn(
   //     investment * numInvestmentsPerFund,
@@ -280,5 +387,7 @@ const bigCalc = ({ investments, irr }) => {
   };
   const abc = calcMean(returns);
   const def = getStandardDeviation(returns);
-  return { mean: abc, stdDev: def };
+  const modifiedStdDev = 4;
+  // console.log(getStandardDeviation(r));
+  return { mean: abc, stdDev: def, actualReturn, modifiedStdDev };
 };
