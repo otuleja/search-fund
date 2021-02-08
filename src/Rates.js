@@ -18,6 +18,7 @@ export function ExchangeRates() {
     minInvestments: 2,
     maxInvestments: 40,
     deteriorates: 0.93,
+    threshold: 5,
   });
   const [investments, setInvestments] = useState(null);
   const [results, setResults] = useState([]);
@@ -81,7 +82,8 @@ export function ExchangeRates() {
   const handleChange = (e) => {
     if (
       e.target.name === "minInvestments" ||
-      e.target.name === "maxInvestments"
+      e.target.name === "maxInvestments" ||
+      e.target.name === "threshold"
     ) {
       setVars({ ...vars, [e.target.name]: parseInt(e.target.value) });
       return;
@@ -180,6 +182,17 @@ export function ExchangeRates() {
                 type="number"
               />
             </div>
+            <div style={{ marginTop: 10 }}>
+              <TextField
+                name="threshold"
+                id="outlined-basic"
+                label="Threshold"
+                variant="outlined"
+                value={vars.threshold}
+                onChange={handleChange}
+                type="number"
+              />
+            </div>
 
             <div>
               <button onClick={() => handleSubmit()}>Submit</button>
@@ -253,7 +266,7 @@ export const calcSharpeRatio = (mean, rfr, stdDev) => {
   return sharpe;
 };
 
-const bigCalc = ({ investments, irr, deteriorates }) => {
+const bigCalc = ({ investments, irr, deteriorates, threshold }) => {
   let returnsObj = [...returnsArray];
   const sum = returnsObj.reduce((acc, current) => {
     acc = acc + current.num;
@@ -276,7 +289,12 @@ const bigCalc = ({ investments, irr, deteriorates }) => {
         break;
       }
     }
-    result = result * Math.pow(deteriorates, n) * 1.1;
+    if (n + 1 > threshold) {
+      //   console.log("yes");
+      result = result * Math.pow(deteriorates, n + 1 - threshold);
+    } else {
+      //   console.log("no");
+    }
     return result;
   };
   const years = 5;
