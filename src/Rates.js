@@ -290,10 +290,7 @@ const bigCalc = ({ investments, irr, deteriorates, threshold }) => {
       }
     }
     if (n + 1 > threshold) {
-      //   console.log("yes");
       result = result * Math.pow(deteriorates, n + 1 - threshold);
-    } else {
-      //   console.log("no");
     }
     return result;
   };
