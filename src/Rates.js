@@ -16,7 +16,7 @@ export function ExchangeRates() {
     rfr: "2.0",
     irr: 30,
     minInvestments: 2,
-    maxInvestments: 2,
+    maxInvestments: 40,
     deteriorates: 0.93,
   });
   const [investments, setInvestments] = useState(null);
@@ -81,10 +81,13 @@ export function ExchangeRates() {
   const handleChange = (e) => {
     if (
       e.target.name === "minInvestments" ||
-      e.target.name === "maxInvestments" ||
-      e.target.name === "deteriorates"
+      e.target.name === "maxInvestments"
     ) {
       setVars({ ...vars, [e.target.name]: parseInt(e.target.value) });
+      return;
+    }
+    if (e.target.name === "deteriorates") {
+      setVars({ ...vars, [e.target.name]: parseFloat(e.target.value) });
       return;
     }
     setVars({ ...vars, [e.target.name]: e.target.value });
@@ -99,6 +102,7 @@ export function ExchangeRates() {
 
   const handleReset = () => {
     setResults([]);
+    setInvestments(null);
   };
   return (
     <div>
